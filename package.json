@@ -1,0 +1,16 @@
+{
+  "name": "thelastdance.fun",
+  "version": "0.0.1",
+  "private": false,
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "node-sass": "^4.5.3",
+    "nodemon": "^1.12.1"
+  },
+  "scripts": {
+    "build-css": "node-sass --include-path scss src/scss/style.scss public/css/style.css",
+    "watch-css": "nodemon --ext scss --watch src -x \"yarn run build-css\""
+  }
+}
