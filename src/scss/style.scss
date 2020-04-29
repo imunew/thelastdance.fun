@@ -25,7 +25,11 @@ header {
   padding: 10px;
   h1 {
     font-size: 24px;
-    text-decoration: underline solid #ce1141;
+    text-decoration: underline;
+    text-decoration-color: #ce1141;
+    text-decoration-style: solid;
+    -webkit-text-decoration-color: #ce1141;
+    -webkit-text-decoration-style: solid;
   }
 }
 
