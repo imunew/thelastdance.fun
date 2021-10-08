@@ -44,8 +44,8 @@ jobs:
       - name: Install dependencies 👨🏻‍💻
         run: yarn
 
-      - name: Generate static assets
-        run: yarn generate
+#      - name: Generate static assets
+#        run: yarn generate
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -61,7 +61,7 @@ jobs:
         env:
           LASTDANCE_WEB_BUCKET: ${{ secrets.LASTDANCE_WEB_BUCKET }}
         run: |
-          aws s3 sync --exact-timestamps --delete dist s3://${{ env.LASTDANCE_WEB_BUCKET }}
+          aws s3 sync --exact-timestamps --delete public s3://${{ env.LASTDANCE_WEB_BUCKET }}
 
       - name: Invalidate CloudFront
         uses: chetan/invalidate-cloudfront-action@master
