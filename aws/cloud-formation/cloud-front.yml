@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  StackFamily:
+    Type: String
+    Default: lastdance
+  CNAME:
+    Type: String
+    Default: thelastdance.fun
+  AcmCertificateArn:
+    Type: String
+    Default: arn:aws:acm:us-east-1:538432385953:certificate/1a908a08-c2d6-4e47-9ec8-5b8e00ac919d
+
+Resources:
+  OAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub "${StackFamily}-web-oai"
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        PriceClass: PriceClass_All
+        Origins:
+          - Id: !Sub "S3-${StackFamily}-web"
+            DomainName:
+              !Sub
+                - "${BUCKET}.s3-website-${AWS::Region}.amazonaws.com"
+                - BUCKET:
+                    Fn::ImportValue:
+                      !Sub "${StackFamily}-web-s3-source"
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub "S3-${StackFamily}-web"
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          DefaultTTL: 3600
+          MaxTTL: 86400
+          MinTTL: 60
+          Compress: true
+          ForwardedValues:
+            Headers:
+              - Authorization
+            Cookies:
+              Forward: all
+            QueryString: true
+        ViewerCertificate:
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+          AcmCertificateArn: !Ref AcmCertificateArn
+        DefaultRootObject: index.html
+        HttpVersion: http2
+        Enabled: true
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ErrorCachingMinTTL: 0
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        Aliases:
+          - !Ref CNAME
+    DependsOn:
+      - OAI
+      - BucketPolicy
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Fn::ImportValue:
+          !Sub "${StackFamily}-web-s3-source"
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource:
+              !Sub
+                - 'arn:aws:s3:::${BUCKET}/*'
+                - BUCKET:
+                    Fn::ImportValue:
+                      !Sub "${StackFamily}-web-s3-source"
+            Principal: '*'
+
+Outputs:
+  CloudFrontDistribution:
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub "${StackFamily}-web-cloud-front"

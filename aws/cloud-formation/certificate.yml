@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  StackFamily:
+    Type: String
+    Default: lastdance
+  DomainValidationDomainName:
+    Type: String
+    Default: thelastdance.fun
+  DomainValidationHostedZoneId:
+    Type: String
+    Default: Z060522673Q284N4C9OQ
+  CertificateDomainName:
+    Type: String
+    Default: "thelastdance.fun"
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref CertificateDomainName
+      DomainValidationOptions:
+        - DomainName: !Ref DomainValidationDomainName
+          HostedZoneId: !Ref DomainValidationHostedZoneId
+      ValidationMethod: DNS
+
+Outputs:
+  Certificate:
+    Value: !Ref Certificate
+    Export:
+      Name: !Sub "${StackFamily}-certificate"
